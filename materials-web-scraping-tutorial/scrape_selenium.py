@@ -4,8 +4,14 @@ from selenium.webdriver.common.by import By
 import os
 import sys
 import json
+import numpy as np
+import multiprocessing
 
 import username_generate
+
+manager = multiprocessing.Manager()
+shared_dict = manager.dict()
+
 
 # {sub_name: [(og_post, list of comments, user_name)]}   How to store the data, add the username
 # cut it at thrid level comment
@@ -23,9 +29,7 @@ def scrape(link):
     run = True
     time.sleep(2)
     title = driver2.find_element(By.XPATH, '/html/body/shreddit-app/div/div[2]/shreddit-post/div[2]')
-    name = driver2.find_element(By.XPATH, '/html/body/shreddit-app/div/div[2]/shreddit-post/div[1]/span[1]/div/div/span[1]/span/div/faceplate-hovercard/faceplate-tracker/a')
     title = title.text
-    name = name.text
     driver2.quit()
     driver = webdriver.Chrome()
     driver.get(link)
@@ -36,13 +40,13 @@ def scrape(link):
    # try:
     while(run):
         try:
-            time.sleep(2)
+            time.sleep(1)
             button_elements = driver.find_elements(By.CLASS_NAME,"button")
             if(len(button_elements) > 0):
                 driver.execute_script("arguments[0].scrollIntoView(true);", button_elements[len(button_elements)-1])
                 button_elements[len(button_elements)-1].click()
                 count2 += 1
-            time.sleep(4)
+            time.sleep(1)
             button_elements = driver.find_elements(By.CLASS_NAME,"button")
             
             if(len(button_elements) == 0 or count2 > 10):
@@ -125,35 +129,44 @@ def generateHrefs(num,link):
         if not len(next_button) == 0:
             button = next_button[0].find_element(By.TAG_NAME, "a")
             button.click()
-            time.sleep(2)
+            time.sleep(0.1)
         else:
             return hrefs
     return hrefs
         
-        
-    
+def sub(hrefs):        
+    for href in hrefs:
+        comments = scrape(href)
+        subreddit = comments[0]
+        if subreddit in shared_dict:
+            shared_dict[subreddit].append(comments[1])
+        else:
+            shared_dict[subreddit] = [comments[1]]
+            
 def main():
-    dict = {}
+   
     
     # pass link to desired reddit page/subreddit as first command line argument
     # pass number of desired reddit pages to scrape as second command line argument
     subreddit = sys.argv[1]
     num = int(sys.argv[2])
     hrefs = generateHrefs(num,subreddit)
-    for href in hrefs:
-        comments = scrape(href)
-        #print(comments)
+    lists = np.array_split(hrefs,10)
+    processes = []
+    for list in lists:
+        process = multiprocessing.Process(target=sub, args=(list,))
+        processes.append(process)
+    
+    for process in processes:
+        process.start()
         
-        if dict.get(comments[0]):
-            dict.get(comments[0]).append(comments[1])
-        else:
-            dict[comments[0]] = []
-            dict[comments[0]].append(comments[1])
-            
-    # for key, value in dict.items():
-    #     print(key, ":", value)
-        
-    json_data = json.dumps(dict)
+    for process in processes:
+        process.join()
+    
+    # Convert the shared_dict to a regular Python dictionary before JSON serialization
+    result_dict = dict(shared_dict)
+
+    json_data = json.dumps(result_dict)
     print(json_data)
 
     
