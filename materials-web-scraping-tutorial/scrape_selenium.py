@@ -42,7 +42,7 @@ def scrape(link):
                 driver.execute_script("arguments[0].scrollIntoView(true);", button_elements[len(button_elements)-1])
                 button_elements[len(button_elements)-1].click()
                 count2 += 1
-            time.sleep(15)
+            time.sleep(4)
             button_elements = driver.find_elements(By.CLASS_NAME,"button")
             
             if(len(button_elements) == 0 or count2 > 10):
@@ -81,7 +81,7 @@ def scrape(link):
             second_comment = second_comments[0].find_elements(By.TAG_NAME, 'p')
             for comment in second_comment:
                 second_text += comment.text + ' '
-            comments_list.append(second_text)
+            comments_list.append((username_generate.generate_username(), second_text))
             count += 1
             third_comments = driver.find_elements(By.XPATH, third_level_xpath)
             if len(third_comments) > 0:
@@ -90,7 +90,7 @@ def scrape(link):
                 third_comment = third_comments[0].find_elements(By.TAG_NAME, 'p')
                 for comment in third_comment:
                     third_text += comment.text + ' '
-                comments_list.append(third_text)
+                comments_list.append((username_generate.generate_username(), third_text))
                 count += 1
         
     driver.quit()
@@ -125,7 +125,7 @@ def generateHrefs(num,link):
         if not len(next_button) == 0:
             button = next_button[0].find_element(By.TAG_NAME, "a")
             button.click()
-            time.sleep(4)
+            time.sleep(2)
         else:
             return hrefs
     return hrefs
