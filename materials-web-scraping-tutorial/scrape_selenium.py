@@ -5,6 +5,8 @@ import os
 import sys
 import json
 
+import username_generate
+
 # {sub_name: [(og_post, list of comments, user_name)]}   How to store the data, add the username
 # cut it at thrid level comment
 # limit to certain number of comments per post (300)
@@ -66,7 +68,7 @@ def scrape(link):
         first_text = ''
         for comment in first_comment:
             first_text += comment.text + ' '
-        comments_list.append(first_text)
+        comments_list.append((username_generate.generate_username(), first_text))
         count += 1
         second_level_xpath = "/html/body/div[4]/div[2]/div[3]/div[" + str(1 + 2*i) + "]/div[3]/div/div[1]/div[2]/form/div/div"
         second_points_xpath = "/html/body/div[4]/div[2]/div[3]/div[" + str(1 + 2*i) + "]/div[3]/div/div[1]/div[2]/p/span[3]"
@@ -108,7 +110,6 @@ def generateHrefs(num,link):
             try:
                 title = element.find_element(By.TAG_NAME, "a")
                 href = title.get_attribute('href')
-                print(href)
                 if href.startswith('https://old.reddit.com/r/'):
                     hrefs.append(href)
                     count += 1
