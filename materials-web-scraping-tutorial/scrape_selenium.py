@@ -1,6 +1,7 @@
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 import os
 import sys
 import json
@@ -19,25 +20,23 @@ shared_dict = manager.dict()
 # 100 post limit per subreddit
 
 def scrape(link):
+    print('Scraping:', link)
     subreddit = link.split('/')[4]
     name = link.split('/')[7]
-    
     link2 = link.replace('old','www',1)
-    
-    driver2 = webdriver.Chrome()
-    driver2.get(link2)
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    driver = webdriver.Chrome(options=chrome_options)
+    driver.get(link2)
+    time.sleep(0.5)
     run = True
-    time.sleep(2)
-    title = driver2.find_element(By.XPATH, '/html/body/shreddit-app/div/div[2]/shreddit-post/div[2]')
+    title = driver.find_element(By.XPATH, '/html/body/shreddit-app/div/div[2]/shreddit-post/div[2]')
     title = title.text
-    driver2.quit()
-    driver = webdriver.Chrome()
     driver.get(link)
-    time.sleep(2)
+    time.sleep(0.5)
     driver.execute_script("window.scrollTo(0, 999999999999999999999999999999999999);")
     count = 0
     count2 = 0
-   # try:
     while(run):
         try:
             time.sleep(1)
@@ -54,20 +53,13 @@ def scrape(link):
         except:
             run = False
     
-    
     comments_list = []
-    # original_post = driver.find_elements(By.XPATH, '/html/body/div[4]/div[1]/div[1]/div[2]/div/p')
-    # if len(original_post) > 0:
-    #     original_post = original_post[0].text
-    # else:
-    #     original_post = ' '
-    # original_poster = driver.find_elements(By.XPATH, '/html/body/div[4]/div[1]/div[1]/div[2]/div/p[2]/a')[0].text
     first_level_comments = driver.find_elements(By.XPATH,"/html/body/div/div/div/div/div/form/div/div")
     first_level_points = driver.find_elements(By.XPATH,"/html/body/div/div/div/div/div/p/span[3]")
     for i in range(len(first_level_comments)):
         if count >= 300:
-            #return (original_post, original_poster, comments_list)
-            return [subreddit,(title, name, comments_list)]
+            # [subreddit name, (name, title, username of poster, comments list)]
+            return [subreddit,(name, title, username_generate.generate_username() ,comments_list)]
         first_comment = first_level_comments[i].find_elements(By.TAG_NAME, "p")
         first_text = ''
         for comment in first_comment:
@@ -75,12 +67,12 @@ def scrape(link):
         comments_list.append((username_generate.generate_username(), first_text))
         count += 1
         second_level_xpath = "/html/body/div[4]/div[2]/div[3]/div[" + str(1 + 2*i) + "]/div[3]/div/div[1]/div[2]/form/div/div"
-        second_points_xpath = "/html/body/div[4]/div[2]/div[3]/div[" + str(1 + 2*i) + "]/div[3]/div/div[1]/div[2]/p/span[3]"
+        # second_points_xpath = "/html/body/div[4]/div[2]/div[3]/div[" + str(1 + 2*i) + "]/div[3]/div/div[1]/div[2]/p/span[3]"
         third_level_xpath = "/html/body/div[4]/div[2]/div[3]/div[" + str(1 + 2*i) + "]/div[3]/div/div[1]/div[2]/div/div[1]/div[2]/form/div/div"
-        third_points_xpath = "/html/body/div[4]/div[2]/div[3]/div[" + str(1 + 2*i) + "]/div[3]/div/div[1]/div[2]/div/div[1]/div[2]/p/span[3]"
+        # third_points_xpath = "/html/body/div[4]/div[2]/div[3]/div[" + str(1 + 2*i) + "]/div[3]/div/div[1]/div[2]/div/div[1]/div[2]/p/span[3]"
         second_comments = driver.find_elements(By.XPATH, second_level_xpath)
         if len(second_comments) > 0:
-            second_level_points = driver.find_element(By.XPATH, second_points_xpath)
+            # second_level_points = driver.find_element(By.XPATH, second_points_xpath)
             second_text = ''
             second_comment = second_comments[0].find_elements(By.TAG_NAME, 'p')
             for comment in second_comment:
@@ -89,7 +81,7 @@ def scrape(link):
             count += 1
             third_comments = driver.find_elements(By.XPATH, third_level_xpath)
             if len(third_comments) > 0:
-                third_level_points = driver.find_element(By.XPATH, third_points_xpath)
+                # third_level_points = driver.find_element(By.XPATH, third_points_xpath)
                 third_text = ''
                 third_comment = third_comments[0].find_elements(By.TAG_NAME, 'p')
                 for comment in third_comment:
@@ -98,14 +90,15 @@ def scrape(link):
                 count += 1
         
     driver.quit()
-    #return (original_post, original_poster, comments_list)
-    return [subreddit,(title, name, comments_list)]
+    return [subreddit,(name, title, username_generate.generate_username() ,comments_list)]
     
-#generates
 def generateHrefs(num,link):
-    driver = webdriver.Chrome()
+    print('Generating Hrefs')
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    driver = webdriver.Chrome(options=chrome_options)
     driver.get(link)
-    time.sleep(2)
+    time.sleep(0.5)
     count = 0
     hrefs = []
     while(count <= num):
@@ -145,8 +138,7 @@ def sub(hrefs):
             
 def main():
    
-    
-    # pass link to desired reddit page/subreddit as first command line argument
+    # pass link to desired reddit/subreddit page as first command line argument
     # pass number of desired reddit pages to scrape as second command line argument
     subreddit = sys.argv[1]
     num = int(sys.argv[2])
@@ -163,12 +155,14 @@ def main():
     for process in processes:
         process.join()
     
-    # Convert the shared_dict to a regular Python dictionary before JSON serialization
     result_dict = dict(shared_dict)
 
     json_data = json.dumps(result_dict)
-    print(json_data)
-
+    
+    with open('out.txt', 'w') as file:
+        file.write(json_data)
+        
+    print('Data successfully saved to out.txt')
     
 if __name__ == "__main__":
     main()
