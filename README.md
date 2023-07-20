@@ -12,6 +12,7 @@ To use the web scraper, follow these steps:
 1. Clone the repository: git clone https://github.com/your-username/web-scraper-python.git
 2. Install the required dependencies: pip install -r requirements.txt
 3. Modify the configuration file (config.ini) to specify the URLs to scrape and the desired data extraction settings.
-4. Run the scraper: python scraper.py
-5. The extracted data will be stored in the specified output format (e.g., CSV, JSON) in the designated output directory.
-Please refer to the project documentation for detailed instructions and examples on configuring the scraper and customizing the scraping process.
+4. Run the scraper: Pass link to desired reddit/subreddit page as first command line argument. Pass number of desired reddit pages to scrape as second command line argument
+    
+example command to run
+/bin/python3 /home/spumel/web-scraper-python/materials-web-scraping-tutorial/scrape_selenium.py https://old.reddit.com/ 100
