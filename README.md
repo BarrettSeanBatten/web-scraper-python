@@ -15,4 +15,4 @@ To use the web scraper, follow these steps:
 4. Run the scraper: Pass link to desired reddit/subreddit page as first command line argument. Pass number of desired reddit pages to scrape as second command line argument
     
 example command to run
-/bin/python3 /home/spumel/web-scraper-python/materials-web-scraping-tutorial/scrape_selenium.py https://old.reddit.com/ 100
+***/bin/python3 /home/spumel/web-scraper-python/materials-web-scraping-tutorial/scrape_selenium.py https://old.reddit.com/ 100***
