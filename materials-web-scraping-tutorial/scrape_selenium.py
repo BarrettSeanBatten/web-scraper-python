@@ -2,7 +2,6 @@ import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-import os
 import sys
 import json
 import numpy as np
@@ -12,7 +11,6 @@ import username_generate
 
 manager = multiprocessing.Manager()
 shared_dict = manager.dict()
-
 
 # {sub_name: [(og_post, list of comments, user_name)]}   How to store the data, add the username
 # cut it at thrid level comment
@@ -55,7 +53,7 @@ def scrape(link):
     
     comments_list = []
     first_level_comments = driver.find_elements(By.XPATH,"/html/body/div/div/div/div/div/form/div/div")
-    first_level_points = driver.find_elements(By.XPATH,"/html/body/div/div/div/div/div/p/span[3]")
+    # first_level_points = driver.find_elements(By.XPATH,"/html/body/div/div/div/div/div/p/span[3]")
     for i in range(len(first_level_comments)):
         if count >= 300:
             # [subreddit name, (name, title, username of poster, comments list)]
@@ -137,9 +135,13 @@ def sub(hrefs):
             shared_dict[subreddit] = [comments[1]]
             
 def main():
-   
+    
     # pass link to desired reddit/subreddit page as first command line argument
     # pass number of desired reddit pages to scrape as second command line argument
+    
+    # example command to run
+    # /bin/python3 /home/spumel/web-scraper-python/materials-web-scraping-tutorial/scrape_selenium.py https://old.reddit.com/ 100
+    
     subreddit = sys.argv[1]
     num = int(sys.argv[2])
     hrefs = generateHrefs(num,subreddit)
@@ -166,3 +168,6 @@ def main():
     
 if __name__ == "__main__":
     main()
+    
+    
+# Scraped 100 pages in 9 mins
