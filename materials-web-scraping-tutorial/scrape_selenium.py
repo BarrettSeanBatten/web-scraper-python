@@ -92,7 +92,7 @@ def scrape(link):
     
 def generateHrefs(num,link):
     if link.startswith('https://www.reddit.com'):
-            link = href.replace('://www', '://old')
+            link = link.replace('://www', '://old')
     print('Generating Hrefs')
     chrome_options = Options()
     chrome_options.add_argument("--headless")
