@@ -91,6 +91,8 @@ def scrape(link):
     return [subreddit,(name, title, username_generate.generate_username() ,comments_list)]
     
 def generateHrefs(num,link):
+    if link.startswith('https://www.reddit.com'):
+            link = href.replace('://www', '://old')
     print('Generating Hrefs')
     chrome_options = Options()
     chrome_options.add_argument("--headless")
